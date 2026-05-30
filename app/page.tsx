@@ -78,7 +78,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#070a12] text-[#f3f4f6] p-6 lg:p-12 font-sans selection:bg-cyan-500/20 antialiased">
       <div className="max-w-[1600px] mx-auto">
         
-        {/* SpaceX Style Premium Minimalist Header Frame */}
+        {/* SpaceX Inspired Header Frame */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-8 mb-8 border-b border-gray-800/40 gap-6">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-white bg-gradient-to-b from-white to-gray-400 bg-clip-text text-transparent">
@@ -92,7 +92,7 @@ export default function Dashboard() {
               </span>
               <p className="text-xs text-gray-400 font-medium">
                 {activeTab === 'nifty' && 'Portfolio locked until next formal monthly execution date block.'}
-                {activeTab === 'backtest' Mackenzie and='10-Year historical performance analytics ledger (2016 - 2026).'}
+                {activeTab === 'backtest' && '10-Year historical performance analytics ledger (2016 - 2026).'}
                 {activeTab === 'etf' && 'Global geographical index accumulation returns.'}
               </p>
             </div>
@@ -144,7 +144,7 @@ export default function Dashboard() {
           </div>
         ) : activeTab === 'nifty' ? (
           
-          /* TAB 1: PREMIUM LOCKED CONSTITUENTS LAYOUT */
+          /* TAB 1: ACTIVE PORTFOLIO LOCKED DETAILS MATRIX */
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
             {[filteredNifty.slice(0, 10), filteredNifty.slice(10, 20)].map((colData, colIdx) => (
               <div key={colIdx} className="bg-[#0b101d]/60 border border-gray-800/50 rounded-xl overflow-hidden backdrop-blur-md">
@@ -191,9 +191,8 @@ export default function Dashboard() {
           
         ) : activeTab === 'backtest' ? (
           
-          /* TAB 2: VERIFIED STRATEGY BACKTEST RESULTS (WEEKENDINVESTING FORMAT) */
+          /* TAB 2: FIXED BACKTEST PLOTS & METRICS */
           <div className="space-y-10 max-w-5xl mx-auto">
-            {/* Metric Summary Cards Matrix */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { title: "10-Year Total Return", value: "+1,945.8%", desc: "Initial ₹10L seed became ₹2.04Cr+", color: "text-emerald-400" },
@@ -209,9 +208,7 @@ export default function Dashboard() {
               ))}
             </div>
 
-            {/* High-Fidelity Historical Performance Line Charts (SVG Vector Graphs) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Plot A: Equity Growth Curve Chart */}
               <div className="bg-[#0b101d]/60 border border-gray-800/50 p-6 rounded-xl">
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="text-xs font-bold uppercase tracking-widest text-cyan-400">10-Year Strategy Equity Curve (₹)</h4>
@@ -226,12 +223,11 @@ export default function Dashboard() {
                     </defs>
                   </svg>
                   <div className="absolute bottom-2 left-4 right-4 flex justify-between text-[9px] font-mono font-bold text-gray-600">
-                    <span>2016</span><span>2018</span><span>2020</span><span>2022</span><span>2024</span><span>2026 (Live)</span>
+                    <span>2016</span><span>2018</span><span>2020</span><span>2022</span><span>2024</span><span>2026</span>
                   </div>
                 </div>
               </div>
 
-              {/* Plot B: Historical Strategy Under-the-Water Drawdown Plot */}
               <div className="bg-[#0b101d]/60 border border-gray-800/50 p-6 rounded-xl">
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="text-xs font-bold uppercase tracking-widest text-rose-400">Historical Strategy Drawdown Vector</h4>
@@ -249,7 +245,6 @@ export default function Dashboard() {
               </div>
             </div>
             
-            {/* Strategic Non-Discretionary Mandate Note */}
             <div className="bg-yellow-500/[0.02] border border-yellow-500/10 p-5 rounded-xl text-xs text-yellow-500/80 leading-relaxed tracking-wide">
               <strong>⚠️ STRATEGY ADVISORY OVERLAY:</strong> Momentum anomalies function over historical time horizons due to corporate trends outlasting temporary corrections. Attempting to adjust parameters or discretionary filter holdings mid-month increases transaction churn costs and invalidates the systematic backtest alpha curve. Portfolio targets must remain fixed until the scheduled monthly data calculation sequence triggers on the server.
             </div>
@@ -257,7 +252,7 @@ export default function Dashboard() {
           
         ) : (
           
-          /* TAB 3: GLOBAL MATRIX TRACKER */
+          /* TAB 3: GLOBAL REGIONAL MATRIX TRACKER */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {[etfs.slice(0, Math.ceil(etfs.length/3)), etfs.slice(Math.ceil(etfs.length/3), Math.ceil(etfs.length/3)*2), etfs.slice(Math.ceil(etfs.length/3)*2)].map((colData, colIdx) => (
               <div key={colIdx} className="bg-[#0b101d]/60 border border-gray-800/50 rounded-xl overflow-hidden backdrop-blur-md">

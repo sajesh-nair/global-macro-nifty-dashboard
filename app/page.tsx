@@ -44,7 +44,7 @@ export default function Dashboard() {
         if (niftyRes.data) setStocks(niftyRes.data);
         if (etfRes.data) setEtfs(etfRes.data);
       } catch (err) {
-        print("Terminal Sync Interruption: ", err);
+        console.error("Terminal Sync Interruption: ", err);
       } finally {
         setLoading(false);
       }

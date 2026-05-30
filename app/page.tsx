@@ -29,7 +29,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<'stocks' | 'sectors' | 'etf'>('stocks');
+  const [activeTab, setActiveTab] = useState<'nifty' | 'sectors' | 'etf'>('nifty');
   const [stocks, setStocks] = useState<NiftyStockData[]>([]);
   const [etfs, setEtfs] = useState<ETFData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +50,7 @@ export default function Dashboard() {
         if (niftyRes.data) setStocks(niftyRes.data);
         if (etfRes.data) setEtfs(etfRes.data);
       } catch (err) {
-        console.error("Database connection error:", err);
+        console.error("Error connecting to database partitions:", err);
       } finally {
         setLoading(false);
       }
@@ -77,7 +77,8 @@ export default function Dashboard() {
   const getIndustryLeaderboard = (): IndustryRank[] => {
     const industryMap: { [key: string]: { total_score: number; count: number } } = {};
     
-    stocks.filter(s => s.industry).forEach(stock => {
+    filteredNifty.forEach(stock => {
+      if (!stock.industry) return;
       if (!industryMap[stock.industry]) {
         industryMap[stock.industry] = { total_score: 0, count: 0 };
       }
@@ -110,69 +111,69 @@ export default function Dashboard() {
 
   const renderTrendBadge = (sixMonth: number, threeMonth: number) => {
     if (threeMonth >= 30 && sixMonth <= threeMonth * 1.3) {
-      return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-amber-500/10 border border-amber-500/30 text-amber-400">🚀 BREAKOUT</span>;
+      return <span className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider bg-amber-500/10 border border-amber-500/20 text-amber-400">🚀 BREAKOUT</span>;
     }
     if (sixMonth >= 50 && threeMonth <= sixMonth * 0.15) {
-      return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-rose-500/10 border border-rose-500/30 text-rose-400">⚠️ EXHAUSTED</span>;
+      return <span className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider bg-rose-500/10 border border-rose-500/20 text-rose-400">⚠️ EXHAUSTED</span>;
     }
     if (sixMonth >= 40 && threeMonth >= sixMonth * 0.35) {
-      return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">💎 COMPOUNDER</span>;
+      return <span className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">💎 COMPOUNDER</span>;
     }
-    return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-gray-800 border border-gray-700 text-gray-400">🔄 CYCLICAL</span>;
+    return <span className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider bg-gray-800/60 border border-gray-700/40 text-gray-400">🔄 CYCLICAL</span>;
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f17] text-[#f3f4f6] p-6 lg:p-12 font-sans selection:bg-cyan-500/30">
-      <div className="max-w-[1500px] mx-auto">
+    <div className="min-h-screen bg-[#070a12] text-[#f3f4f6] p-6 lg:p-12 font-sans selection:bg-cyan-500/20 antialiased">
+      <div className="max-w-[1600px] mx-auto">
         
-        {/* Apple-Style Minimalist Header Block */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-8 mb-10 border-b border-gray-800/60 gap-6">
+        {/* Minimalist Apple-Inspired Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-8 mb-10 border-b border-gray-800/40 gap-6">
           <div>
-            <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent">
-              {activeTab === 'stocks' && 'Nifty Momentum Matrix'}
-              {activeTab === 'sectors' && 'Macro Sector Rotations'}
+            <h1 className="text-3xl font-extrabold tracking-tight text-white bg-gradient-to-b from-white to-gray-400 bg-clip-text text-transparent">
+              {activeTab === 'nifty' && 'Nifty Momentum Leaders'}
+              {activeTab === 'sectors' && 'Macro Sector Weights'}
               {activeTab === 'etf' && 'GlobalBeta Terminal'}
             </h1>
-            <p className="text-sm text-gray-400 mt-2 font-medium">
-              {activeTab === 'stocks' && 'High-conviction equity velocity ranking engine.'}
-              {activeTab === 'sectors' && 'Institutional group health and capital allocation weighting metrics.'}
-              {activeTab === 'etf' && 'Global markets cumulative performance index tracker.'}
+            <p className="text-xs text-gray-400 tracking-wide font-medium uppercase mt-1">
+              {activeTab === 'nifty' && 'High-conviction quantitative trend matrices'}
+              {activeTab === 'sectors' && 'Institutional industry rotational strengths'}
+              {activeTab === 'etf' && 'Global geographical capital allocation returns'}
             </p>
           </div>
           
-          <div className="w-full md:w-80 relative">
+          <div className="w-full md:w-80">
             <input 
               type="text"
-              placeholder="Search assets, tickers or sectors..."
+              placeholder="Search assets, symbols or sectors..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.value || e.target.value)}
-              className="w-full bg-[#161c2a] text-white placeholder-gray-500 text-sm px-4 py-3 rounded-xl border border-gray-800 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition shadow-inner"
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-[#0d1321] text-white placeholder-gray-600 text-xs tracking-wide px-4 py-3 rounded-xl border border-gray-800 focus:outline-none focus:border-cyan-500/40 transition shadow-inner"
             />
           </div>
         </div>
 
-        {/* Dynamic Navigation Tabs */}
-        <div className="flex p-1 bg-[#121824] rounded-xl border border-gray-800/80 max-w-lg mb-10 shadow-lg">
+        {/* Apple/SpaceX Ultra-Sleek Navigation Tabs */}
+        <div className="flex p-1 bg-[#0d1321] rounded-xl border border-gray-800/60 max-w-lg mb-10">
           <button
-            onClick={() => { setActiveTab('stocks'); setSearchTerm(""); }}
-            className={`flex-1 text-center py-2.5 text-xs font-semibold tracking-wider uppercase rounded-lg transition-all duration-200 ${
-              activeTab === 'stocks' ? 'bg-[#1c2537] text-cyan-400 shadow-md border border-gray-700/50' : 'text-gray-400 hover:text-gray-200'
+            onClick={() => { setActiveTab('nifty'); setSearchTerm(""); }}
+            className={`flex-1 text-center py-2 text-xs font-semibold tracking-wider uppercase rounded-lg transition-all duration-200 ${
+              activeTab === 'nifty' ? 'bg-[#182235] text-cyan-400 border border-gray-700/30' : 'text-gray-400 hover:text-gray-200'
             }`}
           >
             🇮🇳 Top 20 Stocks
           </button>
           <button
             onClick={() => { setActiveTab('sectors'); setSearchTerm(""); }}
-            className={`flex-1 text-center py-2.5 text-xs font-semibold tracking-wider uppercase rounded-lg transition-all duration-200 ${
-              activeTab === 'sectors' ? 'bg-[#1c2537] text-cyan-400 shadow-md border border-gray-700/50' : 'text-gray-400 hover:text-gray-200'
+            className={`flex-1 text-center py-2 text-xs font-semibold tracking-wider uppercase rounded-lg transition-all duration-200 ${
+              activeTab === 'sectors' ? 'bg-[#182235] text-cyan-400 border border-gray-700/30' : 'text-gray-400 hover:text-gray-200'
             }`}
           >
             📊 Industry Strength
           </button>
           <button
             onClick={() => { setActiveTab('etf'); setSearchTerm(""); }}
-            className={`flex-1 text-center py-2.5 text-xs font-semibold tracking-wider uppercase rounded-lg transition-all duration-200 ${
-              activeTab === 'etf' ? 'bg-[#1c2537] text-cyan-400 shadow-md border border-gray-700/50' : 'text-gray-400 hover:text-gray-200'
+            className={`flex-1 text-center py-2 text-xs font-semibold tracking-wider uppercase rounded-lg transition-all duration-200 ${
+              activeTab === 'etf' ? 'bg-[#182235] text-cyan-400 border border-gray-700/30' : 'text-gray-400 hover:text-gray-200'
             }`}
           >
             🌐 Global ETFs
@@ -180,133 +181,125 @@ export default function Dashboard() {
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 space-y-4">
-            <div className="w-8 h-8 border-2 border-cyan-500/20 border-t-cyan-400 rounded-full animate-spin"></div>
-            <div className="text-sm font-medium text-gray-500 tracking-widest uppercase">Streaming Core Metrics...</div>
+          <div className="flex flex-col items-center justify-center py-32 space-y-3">
+            <div className="w-6 h-6 border-2 border-cyan-500/20 border-t-cyan-400 rounded-full animate-spin"></div>
+            <div className="text-[10px] font-bold text-gray-500 tracking-widest uppercase animate-pulse">Syncing Core Matrix Logs...</div>
           </div>
-        ) : activeTab === 'stocks' ? (
+        ) : activeTab === 'nifty' ? (
           
-          /* TAB 1: SPACIOUS DUAL-COLUMN LAYOUT */
+          /* VIEW 1: STOCKS MATRIX ONLY - CLEAN SPACIOUS TABLES */
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-            
-            {/* Column 1: Ranks 1 - 10 */}
-            <div className="bg-[#121824]/40 border border-gray-800/80 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md">
-              <div className="px-6 py-4 bg-[#121824] border-b border-gray-800/60 flex justify-between items-center">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-cyan-400">Tier-1 Leaders (Ranks 1 - 10)</h3>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
+            {/* Table 1: Ranks 1 - 10 */}
+            <div className="bg-[#0b101d]/60 border border-gray-800/50 rounded-xl overflow-hidden backdrop-blur-md">
+              <div className="px-6 py-4 bg-[#0d1321] border-b border-gray-800/40">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-cyan-400">Tier 1 Leaders (Ranks 1 - 10)</h3>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-gray-800 text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-[#0e131d]/50">
-                      <th className="py-3 px-6">Asset Specification</th>
-                      <th className="py-3 px-4">Sector</th>
-                      <th className="py-3 px-4 text-right">3M %</th>
-                      <th className="py-3 px-4 text-right">6M %</th>
-                      <th className="py-3 px-6 text-right">M-Score</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-800/40 text-sm">
-                    {niftyColumn1.map((stock, idx) => (
-                      <tr key={stock.ticker} className="hover:bg-[#161c2a]/40 transition duration-150 group">
-                        <td className="py-4 px-6">
-                          <div className="flex items-center space-x-3">
-                            <span className="text-gray-600 font-mono text-xs font-bold w-4 group-hover:text-cyan-400 transition">{idx + 1}</span>
-                            <div>
-                              <div className="font-semibold text-gray-200 tracking-tight text-sm">
-                                {stock.company_name.split(' ').slice(0,2).join(' ')}
-                              </div>
-                              <div className="flex items-center space-x-2 mt-1">
-                                <span className="text-[10px] font-mono text-cyan-500/80 font-bold tracking-wide">{stock.ticker}</span>
-                                {renderTrendBadge(stock.return_6m, stock.return_3m)}
-                              </div>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-800/60 text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-[#090d16]/40">
+                    <th className="py-3 px-6">Asset Specification</th>
+                    <th className="py-3 px-4">Sector</th>
+                    <th className="py-3 px-4 text-right">3M %</th>
+                    <th className="py-3 px-4 text-right">6M %</th>
+                    <th className="py-3 px-6 text-right">M-Score</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-800/30 text-xs">
+                  {niftyColumn1.map((stock, idx) => (
+                    <tr key={stock.ticker} className="hover:bg-[#121929]/40 transition duration-150">
+                      <td className="py-3.5 px-6 font-medium text-gray-200">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-gray-600 font-mono text-xs w-4">{idx + 1}</span>
+                          <div>
+                            <div className="font-semibold text-gray-100 tracking-tight text-sm">
+                              {stock.company_name.split(' ').slice(0,2).join(' ')}
+                            </div>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span className="text-[10px] font-mono text-cyan-400 font-bold">{stock.ticker}</span>
+                              {renderTrendBadge(stock.return_6m, stock.return_3m)}
                             </div>
                           </div>
-                        </td>
-                        <td className="py-4 px-4 text-xs font-medium text-gray-400 truncate max-w-[110px]" title={stock.industry}>{stock.industry}</td>
-                        <td className="py-4 px-4 text-right font-mono text-xs font-medium text-gray-300">+{stock.return_3m?.toFixed(1)}%</td>
-                        <td className="py-4 px-4 text-right font-mono text-xs font-medium text-gray-300">+{stock.return_6m?.toFixed(1)}%</td>
-                        <td className="py-4 px-6 text-right font-bold font-mono text-emerald-400 bg-emerald-500/[0.02]">{stock.momentum_score.toFixed(1)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 text-gray-400 truncate max-w-[120px]" title={stock.industry}>{stock.industry}</td>
+                      <td className="py-3.5 px-4 text-right font-mono font-medium text-gray-300">+{stock.return_3m?.toFixed(1)}%</td>
+                      <td className="py-3.5 px-4 text-right font-mono font-medium text-gray-300">+{stock.return_6m?.toFixed(1)}%</td>
+                      <td className="py-3.5 px-6 text-right font-bold font-mono text-emerald-400 bg-emerald-500/[0.02]">{stock.momentum_score.toFixed(1)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
-            {/* Column 2: Ranks 11 - 20 */}
-            <div className="bg-[#121824]/40 border border-gray-800/80 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md">
-              <div className="px-6 py-4 bg-[#121824] border-b border-gray-800/60 flex justify-between items-center">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-cyan-400">Tier-2 Growth (Ranks 11 - 20)</h3>
-                <span className="w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]"></span>
+            {/* Table 2: Ranks 11 - 20 */}
+            <div className="bg-[#0b101d]/60 border border-gray-800/50 rounded-xl overflow-hidden backdrop-blur-md">
+              <div className="px-6 py-4 bg-[#0d1321] border-b border-gray-800/40">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-cyan-400">Tier 2 Growth (Ranks 11 - 20)</h3>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-gray-800 text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-[#0e131d]/50">
-                      <th className="py-3 px-6">Asset Specification</th>
-                      <th className="py-3 px-4">Sector</th>
-                      <th className="py-3 px-4 text-right">3M %</th>
-                      <th className="py-3 px-4 text-right">6M %</th>
-                      <th className="py-3 px-6 text-right">M-Score</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-800/40 text-sm">
-                    {niftyColumn2.map((stock, idx) => (
-                      <tr key={stock.ticker} className="hover:bg-[#161c2a]/40 transition duration-150 group">
-                        <td className="py-4 px-6">
-                          <div className="flex items-center space-x-3">
-                            <span className="text-gray-600 font-mono text-xs font-bold w-4 group-hover:text-cyan-400 transition">{idx + 11}</span>
-                            <div>
-                              <div className="font-semibold text-gray-200 tracking-tight text-sm">
-                                {stock.company_name.split(' ').slice(0,2).join(' ')}
-                              </div>
-                              <div className="flex items-center space-x-2 mt-1">
-                                <span className="text-[10px] font-mono text-cyan-500/80 font-bold tracking-wide">{stock.ticker}</span>
-                                {renderTrendBadge(stock.return_6m, stock.return_3m)}
-                              </div>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-800/60 text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-[#090d16]/40">
+                    <th className="py-3 px-6">Asset Specification</th>
+                    <th className="py-3 px-4">Sector</th>
+                    <th className="py-3 px-4 text-right">3M %</th>
+                    <th className="py-3 px-4 text-right">6M %</th>
+                    <th className="py-3 px-6 text-right">M-Score</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-800/30 text-xs">
+                  {niftyColumn2.map((stock, idx) => (
+                    <tr key={stock.ticker} className="hover:bg-[#121929]/40 transition duration-150">
+                      <td className="py-3.5 px-6 font-medium text-gray-200">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-gray-600 font-mono text-xs w-4">{idx + 11}</span>
+                          <div>
+                            <div className="font-semibold text-gray-100 tracking-tight text-sm">
+                              {stock.company_name.split(' ').slice(0,2).join(' ')}
+                            </div>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span className="text-[10px] font-mono text-cyan-400 font-bold">{stock.ticker}</span>
+                              {renderTrendBadge(stock.return_6m, stock.return_3m)}
                             </div>
                           </div>
-                        </td>
-                        <td className="py-4 px-4 text-xs font-medium text-gray-400 truncate max-w-[110px]" title={stock.industry}>{stock.industry}</td>
-                        <td className="py-4 px-4 text-right font-mono text-xs font-medium text-gray-300">+{stock.return_3m?.toFixed(1)}%</td>
-                        <td className="py-4 px-4 text-right font-mono text-xs font-medium text-gray-300">+{stock.return_6m?.toFixed(1)}%</td>
-                        <td className="py-4 px-6 text-right font-bold font-mono text-emerald-400 bg-emerald-500/[0.02]">{stock.momentum_score.toFixed(1)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 text-gray-400 truncate max-w-[120px]" title={stock.industry}>{stock.industry}</td>
+                      <td className="py-3.5 px-4 text-right font-mono font-medium text-gray-300">+{stock.return_3m?.toFixed(1)}%</td>
+                      <td className="py-3.5 px-4 text-right font-mono font-medium text-gray-300">+{stock.return_6m?.toFixed(1)}%</td>
+                      <td className="py-3.5 px-6 text-right font-bold font-mono text-emerald-400 bg-emerald-500/[0.02]">{stock.momentum_score.toFixed(1)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-
           </div>
+          
         ) : activeTab === 'sectors' ? (
           
-          /* TAB 2: EXCLUSIVE PREMIUM SECTOR LEADERBOARD */
-          <div className="max-w-4xl mx-auto bg-[#121824]/40 border border-gray-800/80 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md">
-            <div className="px-8 py-5 bg-[#121824] border-b border-gray-800/60">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-purple-400">Institutional Macro Weightings</h3>
+          /* VIEW 2: EXCLUSIVE MINIMAL SECTOR ROTATIONS WITH PREMIUM SLIDERS */
+          <div className="max-w-3xl mx-auto bg-[#0b101d]/60 border border-gray-800/50 rounded-xl overflow-hidden backdrop-blur-md">
+            <div className="px-6 py-4 bg-[#0d1321] border-b border-gray-800/40">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-purple-400">Macro Rotational Strengths</h3>
             </div>
-            <div className="p-8 space-y-6">
+            <div className="p-6 space-y-5">
               {topIndustries.map((ind, idx) => {
-                const percentageOfMax = (ind.avg_score / maxIndustryScore) * 100;
+                const widthPercent = (ind.avg_score / maxIndustryScore) * 100;
                 return (
-                  <div key={ind.industry} className="space-y-2 group">
-                    <div className="flex justify-between items-end text-sm">
-                      <div className="flex items-center space-x-3">
-                        <span className="font-mono text-xs font-bold text-gray-600 group-hover:text-purple-400 transition">{idx + 1}</span>
-                        <span className="font-semibold text-gray-200 tracking-tight">{ind.industry}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-md font-bold tracking-wider font-mono bg-[#161c2a] text-purple-400 border border-purple-900/30">
+                  <div key={ind.industry} className="space-y-1.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <div className="flex items-center space-x-2.5">
+                        <span className="text-gray-600 font-mono font-bold w-4">{idx + 1}</span>
+                        <span className="font-semibold text-gray-200">{ind.industry}</span>
+                        <span className="text-[9px] bg-[#0d1321] text-purple-400 border border-purple-900/40 px-2 py-0.5 rounded font-bold font-mono">
                           {ind.stock_count} {ind.stock_count === 1 ? 'STOCK' : 'STOCKS'}
                         </span>
                       </div>
-                      <span className="font-bold font-mono text-purple-300 text-sm">{ind.avg_score.toFixed(2)}</span>
+                      <span className="font-bold font-mono text-purple-300">{ind.avg_score.toFixed(2)}</span>
                     </div>
-                    {/* Minimalist Apple-Style Progress/Strength Bar */}
-                    <div className="w-full h-2.5 bg-[#0e131d] rounded-full overflow-hidden border border-gray-800/50">
+                    <div className="w-full h-1.5 bg-[#090d16] rounded-full overflow-hidden border border-gray-800/40">
                       <div 
-                        className="h-full bg-gradient-to-r from-purple-600 to-purple-400 rounded-full transition-all duration-1000 ease-out"
-                        style={{ width: `${percentageOfMax}%` }}
+                        className="h-full bg-gradient-to-r from-purple-600 to-purple-400 rounded-full transition-all duration-700 ease-out"
+                        style={{ width: `${widthPercent}%` }}
                       ></div>
                     </div>
                   </div>
@@ -314,26 +307,27 @@ export default function Dashboard() {
               })}
             </div>
           </div>
+          
         ) : (
           
-          /* TAB 3: GLOBAL ETF TRACKER LAYOUT */
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          /* VIEW 3: GLOBAL ETF TRACKER (ORIGINAL COLUMNS ARCHITECTURE PRESERVED) */
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {etfColumns.map((colData, colIdx) => (
-              <div key={colIdx} className="bg-[#121824]/40 border border-gray-800/80 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md">
+              <div key={colIdx} className="bg-[#0b101d]/60 border border-gray-800/50 rounded-xl overflow-hidden backdrop-blur-md">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-[#121824] border-b border-gray-800 text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
-                      <th className="py-3 px-5">Geographical Region</th>
+                    <tr className="bg-[#0d1321] border-b border-gray-800/50 text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
+                      <th className="py-3 px-4">Country/Region</th>
                       <th className="py-3 px-4 text-center">Ticker</th>
-                      <th className="py-3 px-5 text-right">Return %</th>
+                      <th className="py-3 px-4 text-right">2025-26 %</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-800/40 text-sm">
+                  <tbody className="divide-y divide-gray-800/30 text-xs">
                     {colData.map((item) => (
-                      <tr key={item.ticker} className="hover:bg-[#161c2a]/40 transition duration-150">
-                        <td className="py-3.5 px-5 font-semibold text-gray-300">{item.country_region}</td>
-                        <td className="py-3.5 px-4 text-center font-mono text-gray-500 text-xs font-bold">{item.ticker}</td>
-                        <td className="py-3.5 px-5 text-right font-bold font-mono text-emerald-400 bg-emerald-500/[0.01]">
+                      <tr key={item.ticker} className="hover:bg-[#121929]/40 transition duration-150">
+                        <td className="py-3 px-4 font-semibold text-gray-300">{item.country_region}</td>
+                        <td className="py-3 px-4 text-center font-mono text-gray-500 font-bold">{item.ticker}</td>
+                        <td className="py-3 px-4 text-right font-bold font-mono text-emerald-400 bg-emerald-500/[0.01]">
                           +{item.return_2025_2026}%
                         </td>
                       </tr>
@@ -345,12 +339,12 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Premium Subtle Branding Footer */}
-        <footer className="mt-20 text-center border-t border-gray-800/40 pt-8 pb-12">
-          <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
-            Designed & Engineered by <span className="text-cyan-400 transition hover:text-cyan-300 font-bold">Sajesh Nair</span>
+        {/* Minimal Subtle Footer */}
+        <footer className="mt-20 text-center border-t border-gray-800/30 pt-6 pb-8 w-full">
+          <p className="text-[10px] font-bold tracking-widest text-gray-500 uppercase">
+            Designed & Engineered by <span className="text-cyan-400 font-bold">Sajesh Nair</span>
           </p>
-          <p className="text-[10px] text-gray-600 mt-2 tracking-wide font-medium">Automated Quantitative Intelligence Matrix • Next.js, Supabase, Railway & Vercel</p>
+          <p className="text-[9px] text-gray-600 mt-1.5 tracking-wide">Automated Quantitative Intelligence Terminal • Next.js, Supabase & Vercel</p>
         </footer>
 
       </div>
